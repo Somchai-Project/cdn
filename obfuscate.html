@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>APPR Obfuscator</title>
+    <link rel="shortcut icon" type="image/x-icon"
+        href="https://cdn.discordapp.com/attachments/968491916654149682/1046657152942616576/newlogo.png" />
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+        integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"
+        integrity="sha512-QTnb9BQkG4fBYIt9JGvYmxPpd6TBeKp6lsUrtiVQsrJ9sb33Bn9s0wMQO9qVBFbPX3xHRAsBHvXlcsrnJjExjg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <div class="announce-bar">
+
+    </div>
+    <div class="mb-4 p-5 bg-dark bg-darken-lg fs-2 fw-bold text-white header">
+        APPR Obfuscator
+        <!-- <p id="countdown">เซิฟเวอร์รีในอีก >> 00:00</p> -->
+    </div>
+
+
+    <form class="m-5" id="file-form">
+        <span class="fs-5 fw-bold">Lua File</span>
+        <div class="form-group w-25 mb-2 mt-2">
+            <div class="custom-file">
+                <input type="file" class="form-control" id="uploadFile" accept=".lua" required />
+            </div>
+        </div>
+        <p>This obfuscator is support only *.lua file.</p>
+        <input class="btn btn-primary fw-bold" type="button" id="submit" value="Obfuscate" />
+
+    </form>
+
+    <script>
+
+        window.onload = (event) => {
+            $('#uploadFile').val('');
+        };
+        $(document).ready(function () {
+            $('#submit').click(function () {
+                var ID = makeid(16)
+
+                var data = new FormData();
+                var files = $('#uploadFile')[0].files[0];
+                if (!files) return;
+                if (!files['name'].endsWith('.lua')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Only .lua files are supported!',
+                    });
+                    return;
+                }
+                data.append('script', files);
+                var options = {
+                    'method': 'POST',
+                    'url': 'https://api.apprdev.tk/webv1/obfuscate/' + ID,
+                    'headers': {
+                        "Content-Type": "multipart/form-data",
+                        'appr-key': 'a6224334-b93c-4acb-9bcc-dd289c9555ea',
+
+                    },
+                    data: data
+                }
+                axios(options).then(function (response) {
+                    if (response != 0) {
+                        let body = response.data;
+                        let timerInterval;
+                        Swal.fire({
+                            title: 'Auto Download!',
+                            html: 'I will close in <b></b> seconds.',
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didOpen: () => {
+                                Swal.showLoading()
+                                const b = Swal.getHtmlContainer().querySelector('b')
+                                timerInterval = setInterval(() => {
+                                    b.textContent = Swal.getTimerLeft()
+                                }, 100)
+                            },
+                            willClose: () => {
+                                clearInterval(timerInterval)
+                            }
+                        }).then((result) => {
+                            if (result.dismiss === Swal.DismissReason.timer) {
+                                download(body['url'], body['filename']);
+                                $('#uploadFile').val('');
+                            }
+                        })
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            });
+        });
+        function makeid(length) {
+            var result = 'bc_';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
+        }
+
+        function download(dataurl, filename) {
+            const link = document.createElement("a");
+            link.href = dataurl;
+            link.download = filename;
+            link.target = '_blank'
+            link.click();
+        }
+        
+        $('.header').append(`<p class="fs-5 countdown">New Year Countdown</p>`)
+
+        var end = new Date("2023-01-01T00:00:00.000+07:00");
+
+        var _second = 1000;
+        var _minute = _second * 60;
+        var _hour = _minute * 60;
+        var _day = _hour * 24;
+        var timer;
+
+        function showRemaining() {
+            var now = new Date();
+            var distance = end - now;
+            if (distance < 0) {
+
+                clearInterval(timer);
+                $('.countdown').text('HAPPY NEW YEAR 2023!!!');
+
+                return;
+            }
+            var days = Math.floor(distance / _day);
+            var hours = Math.floor((distance % _day) / _hour);
+            var minutes = Math.floor((distance % _hour) / _minute);
+            var seconds = Math.floor((distance % _minute) / _second);
+
+            $('.countdown').text(`${days}D ${hours}Hrs ${minutes}Min ${seconds}Sec`)
+
+            document.getElementById('countdown').innerHTML = days + 'days ';
+            document.getElementById('countdown').innerHTML += hours + 'hrs ';
+            document.getElementById('countdown').innerHTML += minutes + 'mins ';
+            document.getElementById('countdown').innerHTML += seconds + 'secs';
+        }
+
+        timer = setInterval(showRemaining, 1000);
+    </script>
+</body>
+
+</html>
