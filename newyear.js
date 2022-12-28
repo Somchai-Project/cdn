@@ -1,7 +1,5 @@
-var jQueryScript = document.createElement('script');  
-jQueryScript.setAttribute('src','https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js');
-document.head.appendChild(jQueryScript);
-
+(function($) {
+        
 $('.header').append(`<p class="fs-5 countdown">New Year Countdown</p>`)
 
         var end = new Date("2023-01-01T00:00:00.000+07:00");
@@ -36,3 +34,5 @@ $('.header').append(`<p class="fs-5 countdown">New Year Countdown</p>`)
         }
 
         timer = setInterval(showRemaining, 1000);
+
+})(jQuery);
